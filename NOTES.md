@@ -193,8 +193,8 @@ GROUP BY collision_date, NEIGH;
  We can then work on the values which know the latitude and longitude.  Fortunatley, google's public dataset also contains a New York bourghs, zone names, bourgh and geography spatial data.  This dataset is called __new_york_taxi_trips &#8594; taxi_zome_geom__
 
  In order to test this dataset, first I found a record which had a null bourrgh and a longitude and latitude (for brevity I have not shown all the colums here): 
-|borough|latitude |longitude|location              |
-|:-:    |:-:      |:-:      |:-:                   |
+|borough|...|latitude |longitude|location              |
+|:-:    |:-:|:-:      |:-:      |:-:                   |
 |null   |40.680088|-73.94398|(40.680088, -73.94398)|
 
 We have our latitude and longitude, so can we find where this is?  
