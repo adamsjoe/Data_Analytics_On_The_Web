@@ -195,7 +195,7 @@ GROUP BY collision_date, NEIGH;
  In order to test this dataset, first I found a record which had a null bourrgh and a longitude and latitude (for brevity I have not shown all the colums here): 
 |borough|...|latitude |longitude|location              |
 |:-:    |:-:|:-:      |:-:      |:-:                   |
-|null   |40.680088|-73.94398|(40.680088, -73.94398)|
+|null   |...|40.680088|-73.94398|(40.680088, -73.94398)|
 
 We have our latitude and longitude, so can we find where this is?  
 ```sql
