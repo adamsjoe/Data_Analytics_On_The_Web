@@ -130,11 +130,12 @@ select count(*) FROM `bigquery-public-data.new_york_mv_collisions.nypd_mv_collis
 ```
 This gives the following values:
 |Row|bourgh       |Count  |
-|1	|BROOKLYN     |397447 |
+|:-:|:-:          |:-:    |
+|1	 |BROOKLYN     |397447 |
 |2  |BRONX        |183043 |
-|3	|QUEENS       |338237 |
-|4	|MANHATTAN    |291061 |
-|5	|STATEN ISLAND|53245  |
+|3	 |QUEENS       |338237 |
+|4	 |MANHATTAN    |291061 |
+|5	 |STATEN ISLAND|53245  |
 |6  |null         |563929 |
 |   |             |1826962|
 
@@ -146,11 +147,12 @@ select count(*) FROM `bigquery-public-data.new_york_mv_collisions.nypd_mv_collis
 
 At this point we can do some analysis on the data, we can work out the percentages:
 |Row|bourgh       |Count  |Percentage      |
-|1	|BROOKLYN     |397447 |21.7545301982198|
+|:-:|:-:          |:-:    |:-:             |
+|1	 |BROOKLYN     |397447 |21.7545301982198|
 |2  |BRONX        |183043 |10.0189823324185|
-|3	|QUEENS       |338237 |18.5136308253812|
-|4	|MANHATTAN    |291061 |15.9314205768921|
-|5	|STATEN ISLAND|53245  |2.91440106581308|
+|3	 |QUEENS       |338237 |18.5136308253812|
+|4	 |MANHATTAN    |291061 |15.9314205768921|
+|5	 |STATEN ISLAND|53245  |2.91440106581308|
 |6  |null         |563929 |30.8670350012753|
 
 We can see that, as a percentage, Staten Island amounts for just under 3% of all the accidents in our dataset.  At this point, we could decide that with such a small amount of the total occuring here that we could discard this. Howver, the "null" bourghs could contain some accidents which occured in the bourgh of sStaten Island (and it could also contain accidents for the other bourghs too.)  So before deciding to discard this, could somehow find a way to determine the bourgh where no bourgh was recorded?
