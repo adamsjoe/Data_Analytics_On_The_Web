@@ -208,6 +208,8 @@ So to further refine this query:
 SELECT UPPER(borough) FROM `bigquery-public-data.new_york_taxi_trips.taxi_zone_geom` tz_loc
 WHERE (ST_DWithin(tz_loc.zone_geom, ST_GeogPoint(-73.94398, 40.680088),0))
 ```
+I have used the UPPER() function to extract the bourgh name to be the same as the ones which are stored in the collisions data.  In this case, the above query yields "BROOKLYN"
+
 We now need to create a new view to see if we can use the above query for our 382,661 records where we have the latitude and location for.
 
 CRAP QUERY
