@@ -111,11 +111,12 @@ select distinct (borough) FROM `bigquery-public-data.new_york_mv_collisions.nypd
 ```
 which yielded the following:
 |Row|bourgh       |
-|1	|BROOKLYN     |
+|:-:|:-:          |
+|1	 |BROOKLYN     |
 |2  |BRONX        |
-|3	|QUEENS       |
-|4	|MANHATTAN    |
-|5	|STATEN ISLAND|
+|3	 |QUEENS       |
+|4	 |MANHATTAN    |
+|5	 |STATEN ISLAND|
 |6  |null         |
 
 We should get counts of these to ensure we have the correct results later
