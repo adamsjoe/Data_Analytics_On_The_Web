@@ -5,8 +5,9 @@ CREATE VIEW `uhi-assignment-1.assignment.collisions_data_bourgh` AS
 SELECT CAST(timestamp as DATE) as collision_date, 
 COUNT(CAST(timestamp as DATE)) as NUM_COLLISIONS, 
 CASE 
-    WHEN borough IS NOT NULL THEN CAST(borough as STRING) -- when the bourgh is set
-    WHEN ((ds.latitude IS NULL or ds.longitude IS NOT NULL) AND ds.borough IS NULL) THEN (SELECT CAST(UPPER(borough)as STRING) FROM `bigquery-public-data.new_york_taxi_trips.taxi_zone_geom` tz_loc WHERE (ST_DWithin(tz_loc.zone_geom, ST_GeogPoint(ds.longitude, ds.latitude),0))) -- when the borough is null and either lat or long is null
+    WHEN borough IS NOT NULL THEN CAST(borough as STRING) -- when the borough is set
+    WHEN ((ds.latitude IS NOT NULL or ds.longitude IS NOT NULL) AND ds.borough IS NULL) THEN (SELECT CAST(UPPER(borough)as STRING) FROM `bigquery-public-data.new_york_taxi_trips.taxi_zone_geom` tz_loc WHERE (ST_DWithin(tz_loc.zone_geom, ST_GeogPoint(ds.longitude, ds.latitude),0))) -- when the borough is null and either lat or long is not null
+    WHEN (ds.latitude IS NULL OR ds.longitude IS NULL OR ds.borough IS NULL) THEN "Unknown"
 END AS NEIGHBORHOOD,
 SUM(CAST(number_of_cyclist_killed as INT64)) as CYCLISTS_KILLED,
 SUM(CAST(number_of_cyclist_injured as INT64)) as CYCLISTS_INJURED,
