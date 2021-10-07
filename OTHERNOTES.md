@@ -24,6 +24,7 @@ GROUP BY collision_date, NEIGHBORHOOD;
 However when I try to query this view I get "LEFT OUTER JOIN cannot be used without a condition that is an equality of fields from both sides of the join. "
 
 # Trying to split this apart
+handle where the borough exists
 ```sql
 CREATE VIEW `uhi-assignment-1.assignment.collisions_data_bourgh` AS
 SELECT CAST(timestamp as DATE) as collision_date, 
@@ -41,3 +42,24 @@ FROM `bigquery-public-data.new_york_mv_collisions.nypd_mv_collisions` ds
 WHERE ds.borough IS NOT NULL
 GROUP BY collision_date, NEIGHBORHOOD;
 ```
+handle where there are nothing we can use
+```sql
+CREATE VIEW `uhi-assignment-1.assignment.collisions_data_bourgh_no_lat_long` AS
+SELECT CAST(timestamp as DATE) as collision_date, 
+COUNT(CAST(timestamp as DATE)) as NUM_COLLISIONS, 
+"UNKNOWN" AS NEIGHBORHOOD,
+SUM(CAST(number_of_cyclist_killed as INT64)) as CYCLISTS_KILLED,
+SUM(CAST(number_of_cyclist_injured as INT64)) as CYCLISTS_INJURED,
+SUM(CAST(number_of_motorist_killed as INT64)) as MOTORISTS_KILLED,
+SUM(CAST(number_of_motorist_injured as INT64)) as MOTORISTS_INJURED,
+SUM(CAST(number_of_pedestrians_killed as INT64)) as PEDS_KILLED,
+SUM(CAST(number_of_pedestrians_injured as INT64)) as PEDS_INJURED,
+SUM(CAST(number_of_persons_killed as INT64)) as PERSONS_KILLED,
+SUM(CAST(number_of_persons_injured as INT64)) as PERSONS_INJURED,
+FROM `bigquery-public-data.new_york_mv_collisions.nypd_mv_collisions` ds
+CROSS JOIN `bigquery-public-data.new_york_taxi_trips.taxi_zone_geom` tz_loc
+WHERE ((ds.latitude IS NULL or ds.longitude IS NULL) AND ds.borough IS NULL)
+GROUP BY collision_date, NEIGHBORHOOD;
+```
+
+now to handle the ones where we have to query things
