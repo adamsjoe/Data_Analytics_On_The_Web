@@ -63,3 +63,41 @@ GROUP BY collision_date, NEIGHBORHOOD;
 ```
 
 now to handle the ones where we have to query things
+
+
+
+```sql
+CREATE VIEW `uhi-assignment-1.assignment.collisions_data_bourgh22` AS
+  SELECT
+  CAST(timestamp AS DATE) AS collision_date,
+  COUNT(CAST(timestamp AS DATE)) AS NUM_COLLISIONS,
+  CASE
+    WHEN ds.borough IS NOT NULL THEN CAST(borough AS STRING) -- when the borough is set
+    --WHEN (ds.borough IS NULL AND (ds.latitude IS NOT NULL or ds.longitude IS NOT NULL) )
+    WHEN (ds.borough IS NULL AND ds.location IS NOT NULL )
+      THEN (
+            SELECT CONCAT('XX ', CAST(UPPER(tz_loc.borough) as STRING))
+                  FROM bigquery-public-data.new_york_taxi_trips.taxi_zone_geom tz_loc
+                    WHERE 
+                        ST_DWithin(tz_loc.zone_geom, 
+                            ST_GeogPoint(CAST(ds.longitude AS FLOAT64), 
+                                CAST(ds.latitude AS FLOAT64)),0) 
+                                AND tz_loc.borough = ds.borough
+            ) 
+    WHEN (ds.latitude IS NULL AND ds.longitude IS NULL AND ds.borough IS NULL) THEN "Unknown"
+END
+  AS NEIGHBORHOOD,
+  SUM(CAST(number_of_cyclist_killed AS INT64)) AS CYCLISTS_KILLED,
+  SUM(CAST(number_of_cyclist_injured AS INT64)) AS CYCLISTS_INJURED,
+  SUM(CAST(number_of_motorist_killed AS INT64)) AS MOTORISTS_KILLED,
+  SUM(CAST(number_of_motorist_injured AS INT64)) AS MOTORISTS_INJURED,
+  SUM(CAST(number_of_pedestrians_killed AS INT64)) AS PEDS_KILLED,
+  SUM(CAST(number_of_pedestrians_injured AS INT64)) AS PEDS_INJURED,
+  SUM(CAST(number_of_persons_killed AS INT64)) AS PERSONS_KILLED,
+  SUM(CAST(number_of_persons_injured AS INT64)) AS PERSONS_INJURED,
+FROM
+  bigquery-public-data.new_york_mv_collisions.nypd_mv_collisions ds 
+GROUP BY
+  collision_date,
+  ```
+  
