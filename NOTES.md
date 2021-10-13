@@ -88,35 +88,20 @@ Now to construct our collisions data
 
 # Constructing the collision data
 
-To begin with, extract the number of collisions per day, I have also chosen to extract injuries as this could be usful later
-```sql
-CREATE VIEW `uhi-assignment-1.assignment.collisions_data` AS
-SELECT CAST(timestamp as DATE) as collision_date, 
-COUNT(CAST(timestamp as DATE)) as NUM_COLLISIONS, 
-SUM(CAST(number_of_cyclist_killed as INT64)) as CYCLISTS_KILLED,
-SUM(CAST(number_of_cyclist_injured as INT64)) as CYCLISTS_INJURED,
-SUM(CAST(number_of_motorist_killed as INT64)) as MOTORISTS_KILLED,
-SUM(CAST(number_of_motorist_injured as INT64)) as MOTORISTS_INJURED,
-SUM(CAST(number_of_pedestrians_killed as INT64)) as PEDS_KILLED,
-SUM(CAST(number_of_pedestrians_injured as INT64)) as PEDS_INJURED,
-SUM(CAST(number_of_persons_killed as INT64)) as PERSONS_KILLED,
-SUM(CAST(number_of_persons_injured as INT64)) as PERSONS_INJURED,
-FROM `bigquery-public-data.new_york_mv_collisions.nypd_mv_collisions`
-GROUP BY collision_date;
-```
+To begin with, extract the number of collisions per day, I have also chosen to extract injuries as this could be usful later.  In addition to this, I chose to extract the borough the accident happened in.
 
-I wanted to try to find out if I could extract the neigbourhood, so I first found how many bourghs there are in the dataset:
+I wanted to try to find out if I could extract the neigbourhood, so I first found how many boroughs there are in the dataset:
 ```sql
 select distinct (borough) FROM `bigquery-public-data.new_york_mv_collisions.nypd_mv_collisions`;
 ```
 which yielded the following:
 |Row|bourgh       |
 |:-:|:-:          |
-|1	 |BROOKLYN     |
+|1	|BROOKLYN     |
 |2  |BRONX        |
-|3	 |QUEENS       |
-|4	 |MANHATTAN    |
-|5	 |STATEN ISLAND|
+|3	|QUEENS       |
+|4	|MANHATTAN    |
+|5	|STATEN ISLAND|
 |6  |null         |
 
 We should get counts of these to ensure we have the correct results later
@@ -131,11 +116,11 @@ select count(*) FROM `bigquery-public-data.new_york_mv_collisions.nypd_mv_collis
 This gives the following values:
 |Row|bourgh       |Count  |
 |:-:|:-:          |:-:    |
-|1	 |BROOKLYN     |397447 |
+|1	|BROOKLYN     |397447 |
 |2  |BRONX        |183043 |
-|3	 |QUEENS       |338237 |
-|4	 |MANHATTAN    |291061 |
-|5	 |STATEN ISLAND|53245  |
+|3	|QUEENS       |338237 |
+|4	|MANHATTAN    |291061 |
+|5	|STATEN ISLAND|53245  |
 |6  |null         |563929 |
 |   |             |1826962|
 
@@ -148,14 +133,14 @@ select count(*) FROM `bigquery-public-data.new_york_mv_collisions.nypd_mv_collis
 At this point we can do some analysis on the data, we can work out the percentages:
 |Row|bourgh       |Count  |Percentage      |
 |:-:|:-:          |:-:    |:-:             |
-|1	 |BROOKLYN     |397447 |21.7545301982198|
+|1	|BROOKLYN     |397447 |21.7545301982198|
 |2  |BRONX        |183043 |10.0189823324185|
-|3	 |QUEENS       |338237 |18.5136308253812|
-|4	 |MANHATTAN    |291061 |15.9314205768921|
-|5	 |STATEN ISLAND|53245  |2.91440106581308|
+|3	|QUEENS       |338237 |18.5136308253812|
+|4	|MANHATTAN    |291061 |15.9314205768921|
+|5	|STATEN ISLAND|53245  |2.91440106581308|
 |6  |null         |563929 |30.8670350012753|
 
-We can see that, as a percentage, Staten Island amounts for just under 3% of all the accidents in our dataset.  At this point, we could decide that with such a small amount of the total occuring here that we could discard this. Howver, the "null" bourghs could contain some accidents which occured in the bourgh of sStaten Island (and it could also contain accidents for the other bourghs too.)  So before deciding to discard this, could somehow find a way to determine the bourgh where no bourgh was recorded?
+We can see that, as a percentage, Staten Island amounts for just under 3% of all the accidents in our dataset.  At this point, we could decide that with such a small amount of the total occuring here that we could discard this. Howver, the "null" bourghs will most certainly contain accidents which occured in the bourgh of Staten Island (and it could also contain accidents for the other bourghs too.)  So before deciding to discard this, could somehow find a way to determine the bourgh where no bourgh was recorded?
 We do have latitude and longitude, but simply running:
 ```sql
 select * from `bigquery-public-data.new_york_mv_collisions.nypd_mv_collisions` WHERE borough is null
@@ -166,33 +151,24 @@ select * from `bigquery-public-data.new_york_mv_collisions.nypd_mv_collisions` W
 ```
 This returns 181268 rows - this comes to to approx 9.9% of our records which we have no bourgh, latitude and longitude for ((181268 ÷ 1826962) * 100)
 
-Turning our attention to those which do not have null values for latitude or longitude:
+If we look at those which have no borough but a latitude or longitude, 
 ```sql
 select * from `bigquery-public-data.new_york_mv_collisions.nypd_mv_collisions` WHERE borough is null and (latitude is null or longitude is not null)
 ```
-This returns 382661 rows.
+This returns 382661 rows.  
+
 382661 + 181268 = 563929, which matches our orignal count or null bourghs.  Our data is still correct.
 
-We can then create a view which contains the collision data for the bourghs we know - we do this with the following
-```sql
-CREATE VIEW `uhi-assignment-1.assignment.collisions_data_bourgh` AS
-SELECT CAST(timestamp as DATE) as collision_date, 
-COUNT(CAST(timestamp as DATE)) as NUM_COLLISIONS, 
-CAST(borough as STRING) as NEIGH,
-SUM(CAST(number_of_cyclist_killed as INT64)) as CYCLISTS_KILLED,
-SUM(CAST(number_of_cyclist_injured as INT64)) as CYCLISTS_INJURED,
-SUM(CAST(number_of_motorist_killed as INT64)) as MOTORISTS_KILLED,
-SUM(CAST(number_of_motorist_injured as INT64)) as MOTORISTS_INJURED,
-SUM(CAST(number_of_pedestrians_killed as INT64)) as PEDS_KILLED,
-SUM(CAST(number_of_pedestrians_injured as INT64)) as PEDS_INJURED,
-SUM(CAST(number_of_persons_killed as INT64)) as PERSONS_KILLED,
-SUM(CAST(number_of_persons_injured as INT64)) as PERSONS_INJURED,
-FROM `bigquery-public-data.new_york_mv_collisions.nypd_mv_collisions`
-GROUP BY collision_date, NEIGH;
-```
- We can then work on the values which know the latitude and longitude.  Fortunatley, google's public dataset also contains a New York bourghs, zone names, bourgh and geography spatial data.  This dataset is called __new_york_taxi_trips &#8594; taxi_zome_geom__
+So we have 3 scenarios here to deal with:
+1.  The borough is set, we use that.
+2.  The borough is empty, but we have latitude and longitude co-ordinates.
+3.  The borough is empty, as is the latitude and longitude.
 
- In order to test this dataset, first I found a record which had a null bourrgh and a longitude and latitude (for brevity I have not shown all the colums here): 
+But, the question still remains, can we use the latitude and longitude to?  We can't discard that data, there is far too much of it.  Also, if we discard that data and the 10% which has no location data, we'd be loosing 30%  So we need to find a way to make use of that 20%
+
+Fortunatley, google's public dataset also contains a New York bourghs, zone names, bourgh and geography spatial data.  This dataset is called __new_york_taxi_trips &#8594; taxi_zome_geom__
+
+ n order to test this dataset, first I found a record which had a null bourrgh and a longitude and latitude (for brevity I have not shown all the colums here): 
 |borough|...|latitude |longitude|location              |
 |:-:    |:-:|:-:      |:-:      |:-:                   |
 |null   |...|40.680088|-73.94398|(40.680088, -73.94398)|
@@ -211,26 +187,42 @@ WHERE (ST_DWithin(tz_loc.zone_geom, ST_GeogPoint(-73.94398, 40.680088),0))
 ```
 I have used the UPPER() function to extract the bourgh name to be the same as the ones which are stored in the collisions data.  In this case, the above query yields "BROOKLYN"
 
-We now need to create a new view to see if we can use the above query for our 382,661 records where we have the latitude and location for.
+And to check this view is correct, we can put those values into google and see that the point is in Brooklyn.  (inset image)
 
-CRAP QUERY
+So, what we need to do now is to create our view.  I couldn't get the subquery to work, so have decided to work on this in stages.
+
 ```sql
-CREATE VIEW `uhi-assignment-1.assignment.collisions_data_lat_long` AS
-SELECT CAST(timestamp as DATE) as collision_date, 
-COUNT(CAST(timestamp as DATE)) as NUM_COLLISIONS, 
-SELECT CAST(UPPER(borough)as STRING) AS NEIGH FROM `bigquery-public-data.new_york_taxi_trips.taxi_zone_geom` tz_loc
-WHERE (ST_DWithin(tz_loc.zone_geom, ST_GeogPoint(ds.longitude, ds.latitude),0)),
-SUM(CAST(number_of_cyclist_killed as INT64)) as CYCLISTS_KILLED,
-SUM(CAST(number_of_cyclist_injured as INT64)) as CYCLISTS_INJURED,
-SUM(CAST(number_of_motorist_killed as INT64)) as MOTORISTS_KILLED,
-SUM(CAST(number_of_motorist_injured as INT64)) as MOTORISTS_INJURED,
-SUM(CAST(number_of_pedestrians_killed as INT64)) as PEDS_KILLED,
-SUM(CAST(number_of_pedestrians_injured as INT64)) as PEDS_INJURED,
-SUM(CAST(number_of_persons_killed as INT64)) as PERSONS_KILLED,
-SUM(CAST(number_of_persons_injured as INT64)) as PERSONS_INJURED,
-FROM `bigquery-public-data.new_york_mv_collisions.nypd_mv_collisions` ds
-GROUP BY collision_date, NEIGH;
+CREATE VIEW `uhi-assignment-1.assignment.collisions_data_bourgh_draft` AS
+  SELECT
+  CAST(timestamp AS DATE) AS collision_date,
+  COUNT(CAST(timestamp AS DATE)) AS NUM_COLLISIONS,
+  CASE
+    WHEN ds.borough IS NOT NULL THEN CAST(borough AS STRING) -- when the borough is set
+    WHEN ((ds.latitude IS NOT NULL or ds.longitude IS NOT NULL) AND ds.borough IS NULL) THEN "BB"
+    WHEN (ds.latitude IS NULL OR ds.longitude IS NULL OR ds.borough IS NULL) THEN "Unknown"
+END
+  AS NEIGHBORHOOD,
+  CAST(ds.latitude AS FLOAT64) AS LAT,
+  CAST(ds.longitude AS FLOAT64)  AS LONG,
+  SUM(CAST(number_of_cyclist_killed AS INT64)) AS CYCLISTS_KILLED,
+  SUM(CAST(number_of_cyclist_injured AS INT64)) AS CYCLISTS_INJURED,
+  SUM(CAST(number_of_motorist_killed AS INT64)) AS MOTORISTS_KILLED,
+  SUM(CAST(number_of_motorist_injured AS INT64)) AS MOTORISTS_INJURED,
+  SUM(CAST(number_of_pedestrians_killed AS INT64)) AS PEDS_KILLED,
+  SUM(CAST(number_of_pedestrians_injured AS INT64)) AS PEDS_INJURED,
+  SUM(CAST(number_of_persons_killed AS INT64)) AS PERSONS_KILLED,
+  SUM(CAST(number_of_persons_injured AS INT64)) AS PERSONS_INJURED,
+FROM
+  bigquery-public-data.new_york_mv_collisions.nypd_mv_collisions ds 
+GROUP BY
+  collision_date,
+  NEIGHBORHOOD,
+  LAT, 
+  LONG
 ```
+
+In this query, we create a new view which will, for each date in the dataset, print the sum of the injuries.  Now, the sum will always be truely summed, as we are grouping on the lat and long, but we can modify this later.
+
 In order to check the query, I selected a date and extracted all the records for that date:
 
 ```sql
@@ -240,26 +232,36 @@ I saved this off as a local CSV file and brought this into excel (see file 'data
 
 |Num Records|number_of_cyclist_injured|number_of_cyclist_killed|number_of_motorist_injured|number_of_motorist_killed|number_of_pedestrians_injured|number_of_pedestrians_killed|number_of_persons_injured|number_of_persons_killed|
 |:--:       | :--:                    | :--:                   | :--:                     | :--:                    | :--:                        | :--:                       | :--:                    | :--:                   |
-|299        |11                	      |0                       |101                       |0                        |16                           |0                           |129                      |0                       |
+|298        |11                	      |0                       |99                        |0                        |16                           |0                           |127                      |0                       |
 
 I then ran the following query which would extract all columns from the newly created view for the same date:
 
 ```sql
-SELECT * FROM `uhi-assignment-1.assignment.collisions_data` where collision_date = '2021-04-16'
+SELECT 
+ SUM(CYCLISTS_INJURED) AS CYCLISTS_INJURED,
+ SUM(CYCLISTS_KILLED)  AS CYCLISTS_KILLED,
+ SUM(MOTORISTS_INJURED)  AS MOTORISTS_INJURED,
+ SUM(MOTORISTS_KILLED)  AS MOTORISTS_KILLED,
+ SUM(PEDS_INJURED)  AS PEDS_INJURED,
+ SUM(PEDS_KILLED)  AS PEDS_KILLED,
+ SUM(PERSONS_INJURED)  AS PERSONS_INJURED,
+ SUM(PERSONS_KILLED)  AS PERSONS_KILLED,
+FROM `uhi-assignment-1.assignment.collisions_data_bourgh_draft` 
+WHERE collision_date = '2021-04-16'
 ```
 
 |Row|collision_date|NUM_COLLISIONS|CYCLISTS_KILLED|CYCLISTS_INJURED|MOTORISTS_KILLED|MOTORISTS_INJURED|PEDS_KILLED|PEDS_INJURED|PERSONS_KILLED|PERSONS_INJURED|
 |:-:|:-:           |:-:           |:-:            |:-:             |:-:             |:-:              | :-:       | :-:        | :-:          | :-:           |
-|1  |2021-04-16    |299           |0              |11              |0               |101              |0          |16          |0             |129            |
+|1  |2021-04-16    |277           |0              |11              |0               |101              |0          |16          |0             |129            |
 
-The order of the columns is different, but as can be seen the values match - so collision data is good.
+The values match - the number of records are different.  But that aside, we are looking good.  Our "draft" view is holding up.
 
 ## Now to add in a day field
 
 ```sql
 CREATE VIEW `uhi-assignment-1.assignment.collisions_data_final` 
-AS SELECT FORMAT_DATE("%u", collision_date) as day, collision_date, NUM_COLLISIONS, CYCLISTS_KILLED, CYCLISTS_INJURED, MOTORISTS_KILLED, MOTORISTS_INJURED, PEDS_KILLED, PEDS_INJURED, PERSONS_KILLED, PERSONS_INJURED
-FROM `uhi-assignment-1.assignment.collisions_data`
+AS SELECT FORMAT_DATE("%u", collision_date) as day, collision_date, NEIGHBORHOOD, LAT, LONG, NUM_COLLISIONS, CYCLISTS_KILLED, CYCLISTS_INJURED, MOTORISTS_KILLED, MOTORISTS_INJURED, PEDS_KILLED, PEDS_INJURED, PERSONS_KILLED, PERSONS_INJURED
+FROM `uhi-assignment-1.assignment.collisions_data_bourgh_draft`;
 ```
 
 Generates a new view. 
@@ -269,7 +271,7 @@ To check the day has been added correctly,
 ```sql
 SELECT * FROM `uhi-assignment-1.assignment.collisions_data_final`  where collision_date = '2019-12-04'
 ```
-Which shows that the 4th December, 2019 is a Wednesday (insert image)
+Which shows that the 4th December, 2019 is a Wednesday (value 3) (insert image)
 
 # Finishing touches
 
@@ -277,7 +279,7 @@ Now we need to collate the collisions data with the weather data.
 
 ```sql
 CREATE TABLE `uhi-assignment-1.assignment.collated_data` 
-AS SELECT day, year, mo, da, collision_date, temp, dewp, slp, visib, wdsp, mxpsd, gust, max, min, prcp, sndp, fog, CYCLISTS_KILLED, CYCLISTS_INJURED, MOTORISTS_KILLED, MOTORISTS_INJURED, PEDS_KILLED, PEDS_INJURED,PERSONS_KILLED, PERSONS_INJURED, NUM_COLLISIONS FROM `uhi-assignment-1.assignment.weather_2012_to_2021` as weather,
+AS SELECT day, year, mo, da, collision_date,  NEIGHBORHOOD, LAT, LONG,temp, dewp, slp, visib, wdsp, mxpsd, gust, max, min, prcp, sndp, fog, CYCLISTS_KILLED, CYCLISTS_INJURED, MOTORISTS_KILLED, MOTORISTS_INJURED, PEDS_KILLED, PEDS_INJURED,PERSONS_KILLED, PERSONS_INJURED, NUM_COLLISIONS FROM `uhi-assignment-1.assignment.weather_2012_to_2021` as weather,
 `uhi-assignment-1.assignment.collisions_data_final` as complaints WHERE complaints.collision_date = weather.date
 ```
 
