@@ -52,7 +52,7 @@ for ind in df.index:
     ped_killed        = df['number_of_pedestrians_killed'][ind]
     persons_injured   = df['number_of_persons_injured'][ind]
     persons_killed    = df['number_of_persons_killed'][ind]
-
+    
     if collision_date not in result_dictionary:
         # add the date to the result doctionary - and create a new list
         print(f'Adding new date {collision_date} - Adding')
@@ -72,19 +72,20 @@ for ind in df.index:
             if (not latitude) and (not latitude):
                 borough = getBoroghFromLatLong(latitude, longitude)        
             else:
-                borough = "UNKNOWN"            
-        
-        borough_dictionary["cyclists_injured"] = 0
-        borough_dictionary["cyclists_killed"] = 0
+                borough = "UNKNOWN"         
+
+        borough_dictionary["NUM_COLLISIONS"]    = 0
+        borough_dictionary["cyclists_injured"]  = 0
+        borough_dictionary["cyclists_killed"]   = 0
 
         borough_dictionary["motorists_injured"] = 0
-        borough_dictionary["motorists_killed"] = 0
+        borough_dictionary["motorists_killed"]  = 0
 
-        borough_dictionary["ped_injured"] = 0
-        borough_dictionary["ped_killed"] = 0
+        borough_dictionary["ped_injured"]       = 0
+        borough_dictionary["ped_killed"]        = 0
 
-        borough_dictionary["persons_injured"] = 0
-        borough_dictionary["persons_killed"] = 0
+        borough_dictionary["persons_injured"]   = 0
+        borough_dictionary["persons_killed"]    = 0
 
         result_dictionary[collision_date][borough] = borough_dictionary
     #else:
@@ -93,6 +94,7 @@ for ind in df.index:
     # we not add our results to our borough dictionary
 
     # first, get the values we have for this date:
+    temp_num_collisions = result_dictionary[collision_date][borough].get("NUM_COLLISIONS")
     temp_cycle_injured = result_dictionary[collision_date][borough].get("cyclists_injured")
     temp_cycle_killed = result_dictionary[collision_date][borough].get("cyclists_killed")
 
