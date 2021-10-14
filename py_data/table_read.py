@@ -31,6 +31,7 @@ os.environ["GOOGLE_APPLICATION_CREDENTIALS"]=SERVICE_KEY_jSON
 client = bigquery.Client()         # Start the BigQuery Client
 #QUERY = ('SELECT * FROM `uhi-assignment-1.assignment.collated_data`')
 QUERY = ('select * from `uhi-assignment-1.assignment.collated_data`where collision_date = "2021-10-05" order by collision_date LIMIT 10')
+QUERY = ('SELECT * FROM `uhi-assignment-1.assignment.collated_data`')
 
 query_job = client.query(QUERY)    # Start Query API Request
 query_result = query_job.result()  # Get Query Result
@@ -39,3 +40,10 @@ df = query_result.to_dataframe()
 result_dictionary = {}
 borough_dictionary = {}
 row = 0
+# print(df)
+for ind in df.index:
+    borough           = df['borough'][ind]
+
+    if borough = "BB":
+        # we need to do fancy shit
+        
