@@ -4,14 +4,12 @@ import pprint
 from google.cloud import bigquery
 pp = pprint.PrettyPrinter(indent=4)
 import os
+import pandas as pd
 
 # constants
 SERVICE_KEY_jSON = './service_key.json'
-FILENAME_IN = 'results.csv'
+FILENAME_IN = 'full_results.csv'
 FILENAME_OUT = 'Final_data_v2.csv'
-
-# usdd for the csv output
-csv_headers = ['day','year','mo','da','collision_date','temp','dewp','slp','visib','wdsp','mxpsd','gust','max','min','prcp','sndp','fog','CYCLISTS_KILLED','CYCLISTS_INJURED','MOTORISTS_KILLED','MOTORISTS_INJURED','PEDS_KILLED','PEDS_INJURED','PERSONS_KILLED','PERSONS_INJURED','NUM_COLLISIONS']
 
 # set OS environment
 os.environ["GOOGLE_APPLICATION_CREDENTIALS"]=SERVICE_KEY_jSON
@@ -163,6 +161,7 @@ def collate_data(data_in):
             output_dict[collision_date][neighborhood]["prcp"]  = 0
             output_dict[collision_date][neighborhood]["sndp"]  = 0
             output_dict[collision_date][neighborhood]["fog"]  = 0
+
             output_dict[collision_date][neighborhood]["cyclists_killed"]  = 0
             output_dict[collision_date][neighborhood]["cyclists_injured"]  = 0
             output_dict[collision_date][neighborhood]["motorists_killed"]  = 0
@@ -174,18 +173,18 @@ def collate_data(data_in):
             output_dict[collision_date][neighborhood]["num_collisions"]  = 0
         
         # get the ccurrent things we want to deal with
-        current_temp = output_dict[collision_date][neighborhood].get("temp")
-        current_dewp = output_dict[collision_date][neighborhood].get("dewp")
-        current_slp = output_dict[collision_date][neighborhood].get("slp")
-        current_visib = output_dict[collision_date][neighborhood].get("visib")
-        current_wdsp = output_dict[collision_date][neighborhood].get("wdsp")
-        current_mxpsd = output_dict[collision_date][neighborhood].get("mxpsd")
-        current_gust = output_dict[collision_date][neighborhood].get("gust")
-        current_max = output_dict[collision_date][neighborhood].get("max")
-        current_min = output_dict[collision_date][neighborhood].get("min")
-        current_prcp = output_dict[collision_date][neighborhood].get("prcp")
-        current_sndp = output_dict[collision_date][neighborhood].get("sndp")
-        current_fog = output_dict[collision_date][neighborhood].get("fog")
+        current_temp = temp
+        current_dewp = dewp
+        current_slp = slp
+        current_visib = visib
+        current_wdsp = wdsp
+        current_mxpsd = mxpsd
+        current_gust = gust
+        current_max = max
+        current_min = min
+        current_prcp = prcp
+        current_sndp = sndp
+        current_fog = fog
         current_cyclists_killed = int(output_dict[collision_date][neighborhood].get("cyclists_killed"))
         current_cyclists_injured = output_dict[collision_date][neighborhood].get("cyclists_injured")
         current_motorists_killed = output_dict[collision_date][neighborhood].get("motorists_killed")
@@ -197,18 +196,6 @@ def collate_data(data_in):
         current_num_collisions = output_dict[collision_date][neighborhood].get("num_collisions")
 
         # now we have what values are in the current row - tile to update
-        update_temp = float(temp) + float(current_temp)
-        update_dewp = float(dewp) + float(current_dewp)
-        update_slp = float(slp) + float(current_slp)
-        update_visib = float(visib) + float(current_visib)
-        update_wdsp = float(wdsp) + float(current_wdsp)
-        update_mxpsd = float(mxpsd) + float(current_mxpsd)
-        update_gust = float(gust) + float(current_gust)
-        update_max = float(max) + float(current_max)
-        update_min = float(min) + float(current_min)
-        update_prcp = float(prcp) + float(current_prcp)
-        update_sndp = float(sndp) + float(current_sndp)
-        update_fog = int(fog) + int(current_fog)
         update_cyclists_killed = cyclists_killed + current_cyclists_killed
         update_cyclists_injured = cyclists_injured + current_cyclists_injured
         update_motorists_killed = motorists_killed + current_motorists_killed
@@ -223,19 +210,19 @@ def collate_data(data_in):
         output_dict[collision_date][neighborhood]["day"] = day
         output_dict[collision_date][neighborhood]["year"] = year
         output_dict[collision_date][neighborhood]["mo"] = mo
-        output_dict[collision_date][neighborhood]["day"] = da
-        output_dict[collision_date][neighborhood]["temp"]  = update_temp
-        output_dict[collision_date][neighborhood]["dewp"]  = update_dewp
-        output_dict[collision_date][neighborhood]["slp"]  = update_slp
-        output_dict[collision_date][neighborhood]["visib"]  = update_visib
-        output_dict[collision_date][neighborhood]["wdsp"]  = update_wdsp
-        output_dict[collision_date][neighborhood]["mxpsd"]  = update_mxpsd
-        output_dict[collision_date][neighborhood]["gust"]  = update_gust
-        output_dict[collision_date][neighborhood]["max"]  = update_max
-        output_dict[collision_date][neighborhood]["min"]  = update_min
-        output_dict[collision_date][neighborhood]["prcp"]  = update_prcp
-        output_dict[collision_date][neighborhood]["sndp"]  = update_sndp
-        output_dict[collision_date][neighborhood]["fog"]  = update_fog
+        output_dict[collision_date][neighborhood]["da"] = da
+        output_dict[collision_date][neighborhood]["temp"]  = current_temp
+        output_dict[collision_date][neighborhood]["dewp"]  = current_dewp
+        output_dict[collision_date][neighborhood]["slp"]  = current_slp
+        output_dict[collision_date][neighborhood]["visib"]  = current_visib
+        output_dict[collision_date][neighborhood]["wdsp"]  = current_wdsp
+        output_dict[collision_date][neighborhood]["mxpsd"]  = current_mxpsd
+        output_dict[collision_date][neighborhood]["gust"]  = current_gust
+        output_dict[collision_date][neighborhood]["max"]  = current_max
+        output_dict[collision_date][neighborhood]["min"]  = current_min
+        output_dict[collision_date][neighborhood]["prcp"]  = current_prcp
+        output_dict[collision_date][neighborhood]["sndp"]  = current_sndp
+        output_dict[collision_date][neighborhood]["fog"]  = current_fog
         output_dict[collision_date][neighborhood]["cyclists_killed"]  = update_cyclists_killed
         output_dict[collision_date][neighborhood]["cyclists_injured"]  = update_cyclists_injured
         output_dict[collision_date][neighborhood]["motorists_killed"]  = update_motorists_killed
@@ -247,11 +234,90 @@ def collate_data(data_in):
         output_dict[collision_date][neighborhood]["num_collisions"]  = update_num_collisions
             
     return output_dict
-    # x+=1
-    # print(x)
-    # pp.pprint(output_dict)
 
 
+def getKeys(dictIn):
+    return dictIn.keys()
+
+# Entry point
 data = open_file(FILENAME_IN)
 contents = collate_data(data)
-create_report(FILENAME_OUT, csv_headers, contents)
+
+#pp.pprint(contents["2012-07-01"]["BB"])
+# print(contents["2012-07-01"]["BB"].get("motorists_injured"))
+
+# print(len(contents))
+
+#print(type(contents[0]))
+# for key in contents:
+#     print(key)
+#     for key2 in key:
+#         print(key2)
+
+headers = ['DATE', 'BOROUGH', 'WEEKDAY', 'YEAR', 'MONTH', 'DAY', 'COLLISION_DATE', 'TEMP', 'DEWP', 'SLP', 'VISIB', 'WDSP', 'MXPSD', 'GUST', 'MAX', 'MIN', 'PRCP', 'SNDP', 'FOG', 'CYC_KILL', 'CYC_INJD', 'MOTO_KILL', 'MOTO_INJD', 'PEDS_KILL','PEDS_INJD', 'PERS_KILL', 'PERS_INJD','NUM_COLS']
+output = []
+print(
+    "{:<15}  {:<15}     {:<8}      {:<8}   {:<8}    {:<8}  {:<15}            {:<8}   {:<8}   {:<8}  {:<8}    {:<8}   {:<8}    {:<8}   {:<8}  {:<8}  {:<8}   {:<8}   {:<8}  {:<10}      {:<10}      {:<15}       {:<10}       {:<10}      {:10}        {:<10}       {:<10}     {:<10}".format
+    ('DATE', 'BOROUGH', 'WEEKDAY', 'YEAR', 'MONTH', 'DAY', 'COLLISION_DATE', 'TEMP', 'DEWP', 'SLP', 'VISIB', 'WDSP', 'MXPSD', 'GUST', 'MAX', 'MIN', 'PRCP', 'SNDP', 'FOG', 'CYC_KILL', 'CYC_INJD', 'MOTO_KILL', 'MOTO_INJD', 'PEDS_KILL','PEDS_INJD', 'PERS_KILL', 'PERS_INJD','NUM_COLS')
+    )
+
+for key in contents:
+    row_date = ""
+    subkeys = ""
+    
+    # print(key) #gives me dates
+    row_date = key
+
+    # print(len(contents[key]))
+
+    for subkeys in contents[key]:
+        
+        # print(subkeys)
+        # print(row_date + "  " + subkeys)
+        dayVal = contents[key][subkeys].get("day")
+        
+        yearVal = contents[key][subkeys].get("year")
+        monthVal = contents[key][subkeys].get("mo")
+        daVal = contents[key][subkeys].get("da")
+        
+        coll_date = row_date
+
+        tempVal = contents[key][subkeys].get("temp")
+        dewpVal	= contents[key][subkeys].get("dewp")
+        slpVal = contents[key][subkeys].get("slp")	
+        visibVal = contents[key][subkeys].get("visib")
+        wdspVal = contents[key][subkeys].get("wdsp")
+        mxpsdVal = contents[key][subkeys].get("mxpsd")
+        gustVal = contents[key][subkeys].get("gust")
+        maxVal = contents[key][subkeys].get("max")
+        minVal = contents[key][subkeys].get("min")
+        prcpVal = contents[key][subkeys].get("prcp")
+        sndpVal = contents[key][subkeys].get("sndp")
+        fogVal = contents[key][subkeys].get("fog")
+
+        cyclists_killedVal = contents[key][subkeys].get("cyclists_killed")
+        cyclists_injuredVal = contents[key][subkeys].get("cyclists_injured")
+
+        motorists_killedVal = contents[key][subkeys].get("motorists_killed")
+        motorists_injuredVal = contents[key][subkeys].get("motorists_injured")
+
+        peds_killedVal = contents[key][subkeys].get("peds_killed")
+        peds_injuredVal = contents[key][subkeys].get("peds_injured")
+
+        persons_killedVal = contents[key][subkeys].get("persons_killed")
+        persons_injuredVal = contents[key][subkeys].get("persons_injured")
+
+        num_collisionsVa = contents[key][subkeys].get("num_collisions")
+
+
+        item = row_date, subkeys, dayVal, yearVal, monthVal, daVal, coll_date, tempVal, dewpVal, slpVal, visibVal, wdspVal, mxpsdVal, gustVal, maxVal, minVal, prcpVal, sndpVal, fogVal, cyclists_killedVal, cyclists_injuredVal, motorists_killedVal, motorists_injuredVal, peds_killedVal, peds_injuredVal, peds_killedVal, persons_injuredVal, num_collisionsVa
+
+        output.append(item)
+
+        print(
+            "{:<15}  {:<15}     {:<8}      {:<8}   {:<8}    {:<8}  {:<15}            {:<8}   {:<8}   {:<8}  {:<8}    {:<8}   {:<8}    {:<8}   {:<8}  {:<8}  {:<8}   {:<8}   {:<8}  {:<10}      {:<10}      {:<15}       {:<10}       {:<10}      {:10}        {:<10}       {:<10}     {:<10}".format
+            (row_date, subkeys, dayVal, yearVal, monthVal, daVal, coll_date, tempVal, dewpVal, slpVal, visibVal, wdspVal, mxpsdVal, gustVal, maxVal, minVal, prcpVal, sndpVal, fogVal, cyclists_killedVal, cyclists_injuredVal, motorists_killedVal, motorists_injuredVal, peds_killedVal, peds_injuredVal, peds_killedVal, persons_injuredVal, num_collisionsVa)
+            )
+
+create_report(FILENAME_OUT, headers, output)
+    
