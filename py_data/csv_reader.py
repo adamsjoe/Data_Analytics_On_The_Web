@@ -8,14 +8,15 @@ import pandas as pd
 
 # constants
 SERVICE_KEY_jSON = './service_key.json'
-FILENAME_IN = 'full_results.csv'
-FILENAME_OUT = 'Final_data_v2.csv'
+FILENAME_IN = '../yearCSV/bq-results-2013.csv'
+#FILENAME_IN = '/content/drive/MyDrive/bq-results-20211014-193236-1h75k989rhl5/bq-results-20211014-193236-1h75k989rhl5.csv'
+FILENAME_OUT = '../Final_data_2013.csv'
 
 # set OS environment
 os.environ["GOOGLE_APPLICATION_CREDENTIALS"]=SERVICE_KEY_jSON
 
 def getBoroghFromLatLong(lat, long):
-
+    print(f'Entered Borough Query')
     returnVal = ""
     client = bigquery.Client()         # Start the BigQuery Client
     QUERY = ('SELECT UPPER(borough) AS BOROUGH FROM `bigquery-public-data.new_york_taxi_trips.taxi_zone_geom` tz_loc WHERE (ST_DWithin(tz_loc.zone_geom, ST_GeogPoint('+ str(long) +', '+ str(lat) +'),0))')
@@ -32,6 +33,7 @@ def getBoroghFromLatLong(lat, long):
     return returnVal
 
 def open_file(file_in, skip_header=True):
+    print(f'Opening file {file_in}')
     # setup a variable to hold the data from the file
     data = ''
     try:
@@ -73,6 +75,7 @@ def collate_data(data_in):
     unknown_rows = 0
     found_rows = 0
     linesInFile = len(data_in)
+    print(f'Processing {linesInFile} lines')
 
     output_dict = {}
     
