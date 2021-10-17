@@ -8,19 +8,28 @@ import pandas as pd
 
 # constants
 SERVICE_KEY_jSON = './service_key.json'
-FILENAME_IN = 'full_results.csv'
+FILENAME_IN = 'results.csv'
 FILENAME_OUT = 'Final_data_v2.csv'
 
 # set OS environment
 os.environ["GOOGLE_APPLICATION_CREDENTIALS"]=SERVICE_KEY_jSON
 
 def getBoroghFromLatLong(lat, long):
+
+    returnVal = ""
     client = bigquery.Client()         # Start the BigQuery Client
-    QUERY = ('SELECT UPPER(borough) FROM `bigquery-public-data.current_york_taxi_trips.taxi_zone_geom` tz_loc WHERE (ST_DWithin(tz_loc.zone_geom, ST_GeogPoint('+ str(long) +', '+ str(lat) +'),0))')
+    QUERY = ('SELECT UPPER(borough) AS BOROUGH FROM `bigquery-public-data.new_york_taxi_trips.taxi_zone_geom` tz_loc WHERE (ST_DWithin(tz_loc.zone_geom, ST_GeogPoint('+ str(long) +', '+ str(lat) +'),0))')
     
     query_job = client.query(QUERY)    # Start Query API Request
     query_result = query_job.result()  # Get Query Result 
     df = query_result.to_dataframe() 
+
+    try:
+        returnVal = str(df["BOROUGH"].values[0])
+    except IndexError:
+        returnVal = "Unknown"
+
+    return returnVal
 
 def open_file(file_in, skip_header=True):
     # setup a variable to hold the data from the file
@@ -60,9 +69,17 @@ def create_report(file_name, headers, content):
         sys.exit(1)
 
 def collate_data(data_in):
+    x = 1
+    unknown_rows = 0
+    found_rows = 0
+    linesInFile = len(data_in)
+
     output_dict = {}
-    x = 0
-    for row in data_in:
+    
+    for row in data_in:   
+        pcent = round((x / linesInFile * 100),2)
+        # pcent = x / linesInFile * 100
+        print(f'Processing row - {x} - {pcent}%')
         # make things easier to reference
         day = row[0]
         year = row[1]
@@ -132,15 +149,19 @@ def collate_data(data_in):
         if collision_date not in output_dict:
             output_dict[collision_date] = {}
 
-        # we have bad data we cannot do anything with, I've marked this as neighbourhood "Uknown" - skip over this
-        if neighborhood == "Unknown":
-            continue
-        # # deal with the horrid "BB" - the uknown neighbourhoods:
-        # if neighborhood == "BB":
-        #     neighbourhood = getBoroghFromLatLong(lat, long)
-        # else:
-        #     neighborhood = neighborhood
+        # deal with the horrid "BB" - these are entries which have no latitude, longitude or borough.
+        if neighborhood == "BB":
+            neighborhood = getBoroghFromLatLong(lat, long)
+            print(f'     --> Handling missing borogh - from {lat} and {long} got {neighborhood}')
+            found_rows += 1
+        else:
+            neighborhood = neighborhood
     
+        # we have bad data we cannot do anything with, I've marked this as neighbourhood "Unknown" - skip over this
+        if neighborhood == "Unknown":
+            print(f'     Skipping row - unusable data')
+            unknown_rows += 1
+            continue
         
         if neighborhood not in output_dict[collision_date]:
             output_dict[collision_date][neighborhood]  = {}
@@ -232,7 +253,9 @@ def collate_data(data_in):
         output_dict[collision_date][neighborhood]["persons_killed"]  = update_persons_killed
         output_dict[collision_date][neighborhood]["persons_injured"]  = update_persons_injured
         output_dict[collision_date][neighborhood]["num_collisions"]  = update_num_collisions
-            
+        x += 1
+
+    print(f'Found {found_rows} rows, but had to drop {unknown_rows} rows')                
     return output_dict
 
 
@@ -242,17 +265,6 @@ def getKeys(dictIn):
 # Entry point
 data = open_file(FILENAME_IN)
 contents = collate_data(data)
-
-#pp.pprint(contents["2012-07-01"]["BB"])
-# print(contents["2012-07-01"]["BB"].get("motorists_injured"))
-
-# print(len(contents))
-
-#print(type(contents[0]))
-# for key in contents:
-#     print(key)
-#     for key2 in key:
-#         print(key2)
 
 headers = ['DATE', 'BOROUGH', 'WEEKDAY', 'YEAR', 'MONTH', 'DAY', 'COLLISION_DATE', 'TEMP', 'DEWP', 'SLP', 'VISIB', 'WDSP', 'MXPSD', 'GUST', 'MAX', 'MIN', 'PRCP', 'SNDP', 'FOG', 'CYC_KILL', 'CYC_INJD', 'MOTO_KILL', 'MOTO_INJD', 'PEDS_KILL','PEDS_INJD', 'PERS_KILL', 'PERS_INJD','NUM_COLS']
 output = []
