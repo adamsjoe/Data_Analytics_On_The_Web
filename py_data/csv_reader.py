@@ -8,7 +8,7 @@ import pandas as pd
 
 # constants
 SERVICE_KEY_jSON = './service_key.json'
-FILENAME_IN = 'results.csv'
+FILENAME_IN = 'full_results.csv'
 FILENAME_OUT = 'Final_data_v2.csv'
 
 # set OS environment

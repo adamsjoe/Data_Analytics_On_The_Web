@@ -1,7 +1,7 @@
 # Get the earliest record of a traffic collision in the NYPD
 
 ```sql
-select min(timestamp) from `bigquery-public-data.new_york_mv_collisions.nypd_mv_collisions`
+SELECT MIN(timestamp) FROM `bigquery-public-data.new_york_mv_collisions.nypd_mv_collisions`
 ```
 
 Results in *2012-07-01T00:05:00*
@@ -9,7 +9,7 @@ Results in *2012-07-01T00:05:00*
 # mow get the max
 
 ```sql
-select max(timestamp) from `bigquery-public-data.new_york_mv_collisions.nypd_mv_collisions`
+SELECT MAX(timestamp) FROM `bigquery-public-data.new_york_mv_collisions.nypd_mv_collisions`
 ```
 
 Results in *2021-09-14T23:57:00*
@@ -92,7 +92,7 @@ To begin with, extract the number of collisions per day, I have also chosen to e
 
 I wanted to try to find out if I could extract the neigbourhood, so I first found how many boroughs there are in the dataset:
 ```sql
-select distinct (borough) FROM `bigquery-public-data.new_york_mv_collisions.nypd_mv_collisions`;
+SELECT DISTINCT (borough) FROM `bigquery-public-data.new_york_mv_collisions.nypd_mv_collisions`;
 ```
 which yielded the following:
 |Row|bourgh       |
@@ -106,12 +106,12 @@ which yielded the following:
 
 We should get counts of these to ensure we have the correct results later
 ```sql
-select count(*) FROM `bigquery-public-data.new_york_mv_collisions.nypd_mv_collisions` WHERE borough = "BROOKLYN";
-select count(*) FROM `bigquery-public-data.new_york_mv_collisions.nypd_mv_collisions` WHERE borough = "BRONX";
-select count(*) FROM `bigquery-public-data.new_york_mv_collisions.nypd_mv_collisions` WHERE borough = "QUEENS";
-select count(*) FROM `bigquery-public-data.new_york_mv_collisions.nypd_mv_collisions` WHERE borough = "MANHATTAN";
-select count(*) FROM `bigquery-public-data.new_york_mv_collisions.nypd_mv_collisions` WHERE borough = "STATEN ISLAND";
-select count(*) FROM `bigquery-public-data.new_york_mv_collisions.nypd_mv_collisions` WHERE borough is null;
+SELECT COUNT(*) FROM `bigquery-public-data.new_york_mv_collisions.nypd_mv_collisions` WHERE borough = "BROOKLYN";
+SELECT COUNT(*) FROM `bigquery-public-data.new_york_mv_collisions.nypd_mv_collisions` WHERE borough = "BRONX";
+SELECT COUNT(*) FROM `bigquery-public-data.new_york_mv_collisions.nypd_mv_collisions` WHERE borough = "QUEENS";
+SELECT COUNT(*) FROM `bigquery-public-data.new_york_mv_collisions.nypd_mv_collisions` WHERE borough = "MANHATTAN";
+SELECT COUNT(*) FROM `bigquery-public-data.new_york_mv_collisions.nypd_mv_collisions` WHERE borough = "STATEN ISLAND";
+SELECT COUNT(*) FROM `bigquery-public-data.new_york_mv_collisions.nypd_mv_collisions` WHERE borough is null;
 ```
 This gives the following values:
 |Row|bourgh       |Count  |
@@ -143,11 +143,11 @@ At this point we can do some analysis on the data, we can work out the percentag
 We can see that, as a percentage, Staten Island amounts for just under 3% of all the accidents in our dataset.  At this point, we could decide that with such a small amount of the total occuring here that we could discard this. Howver, the "null" bourghs will most certainly contain accidents which occured in the bourgh of Staten Island (and it could also contain accidents for the other bourghs too.)  So before deciding to discard this, could somehow find a way to determine the bourgh where no bourgh was recorded?
 We do have latitude and longitude, but simply running:
 ```sql
-select * from `bigquery-public-data.new_york_mv_collisions.nypd_mv_collisions` WHERE borough is null
+SELECT * FROM `bigquery-public-data.new_york_mv_collisions.nypd_mv_collisions` WHERE borough IS NULL
 ```
 shows some latitude and longitude with null values, so let's check this further:
 ```sql
-select * from `bigquery-public-data.new_york_mv_collisions.nypd_mv_collisions` WHERE borough is null and (latitude is null or longitude is null)
+SELECT * FROM `bigquery-public-data.new_york_mv_collisions.nypd_mv_collisions` WHERE borough IS NULL AND (latitude IS NULL OR longitude IS NULL)
 ```
 This returns 181268 rows - this comes to to approx 9.9% of our records which we have no bourgh, latitude and longitude for ((181268 ÷ 1826962) * 100)
 
@@ -168,7 +168,7 @@ But, the question still remains, can we use the latitude and longitude to?  We c
 
 Fortunatley, google's public dataset also contains a New York bourghs, zone names, bourgh and geography spatial data.  This dataset is called __new_york_taxi_trips &#8594; taxi_zome_geom__
 
- n order to test this dataset, first I found a record which had a null bourrgh and a longitude and latitude (for brevity I have not shown all the colums here): 
+In order to test this dataset, first I found a record which had a null bourrgh and a longitude and latitude (for brevity I have not shown all the colums here): 
 |borough|...|latitude |longitude|location              |
 |:-:    |:-:|:-:      |:-:      |:-:                   |
 |null   |...|40.680088|-73.94398|(40.680088, -73.94398)|
