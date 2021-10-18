@@ -75,14 +75,16 @@ def collate_data(data_in):
     unknown_rows = 0
     found_rows = 0
     linesInFile = len(data_in)
+
     print(f'Processing {linesInFile} lines')
 
     output_dict = {}
     
     for row in data_in:   
+        # make a little progress counter - otherwise we have no clue what's happening
         pcent = round((x / linesInFile * 100),2)
-        # pcent = x / linesInFile * 100
         print(f'Processing row - {x} - {pcent}%')
+
         # make things easier to reference
         day = row[0]
         year = row[1]
@@ -104,6 +106,8 @@ def collate_data(data_in):
         prcp = row[17]
         sndp = row[18]
         fog = row[19]
+        
+        # someone forgot to fill in numbers, so we need to check something is here as there are nulls in the data
         if row[20] == "":
             cyclists_killed = 0
         else:
@@ -262,15 +266,17 @@ def collate_data(data_in):
     return output_dict
 
 
-def getKeys(dictIn):
-    return dictIn.keys()
-
 # Entry point
 data = open_file(FILENAME_IN)
 contents = collate_data(data)
 
+# headers for use in the CSV output
 headers = ['DATE', 'BOROUGH', 'WEEKDAY', 'YEAR', 'MONTH', 'DAY', 'COLLISION_DATE', 'TEMP', 'DEWP', 'SLP', 'VISIB', 'WDSP', 'MXPSD', 'GUST', 'MAX', 'MIN', 'PRCP', 'SNDP', 'FOG', 'CYC_KILL', 'CYC_INJD', 'MOTO_KILL', 'MOTO_INJD', 'PEDS_KILL','PEDS_INJD', 'PERS_KILL', 'PERS_INJD','NUM_COLS']
+
+# output list
 output = []
+
+# print the headers on screen (formatted) so we know things have happened
 print(
     "{:<15}  {:<15}     {:<8}      {:<8}   {:<8}    {:<8}  {:<15}            {:<8}   {:<8}   {:<8}  {:<8}    {:<8}   {:<8}    {:<8}   {:<8}  {:<8}  {:<8}   {:<8}   {:<8}  {:<10}      {:<10}      {:<15}       {:<10}       {:<10}      {:10}        {:<10}       {:<10}     {:<10}".format
     ('DATE', 'BOROUGH', 'WEEKDAY', 'YEAR', 'MONTH', 'DAY', 'COLLISION_DATE', 'TEMP', 'DEWP', 'SLP', 'VISIB', 'WDSP', 'MXPSD', 'GUST', 'MAX', 'MIN', 'PRCP', 'SNDP', 'FOG', 'CYC_KILL', 'CYC_INJD', 'MOTO_KILL', 'MOTO_INJD', 'PEDS_KILL','PEDS_INJD', 'PERS_KILL', 'PERS_INJD','NUM_COLS')
