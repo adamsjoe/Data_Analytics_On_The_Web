@@ -8,9 +8,9 @@ import pandas as pd
 
 # constants
 SERVICE_KEY_jSON = './service_key.json'
-FILENAME_IN = '../yearCSV/bq-results-2013.csv'
+FILENAME_IN = '../yearCSV/bq-results-2016.csv'
 #FILENAME_IN = '/content/drive/MyDrive/bq-results-20211014-193236-1h75k989rhl5/bq-results-20211014-193236-1h75k989rhl5.csv'
-FILENAME_OUT = '../Final_data_2013.csv'
+FILENAME_OUT = '../Final_data_2016.csv'
 
 # set OS environment
 os.environ["GOOGLE_APPLICATION_CREDENTIALS"]=SERVICE_KEY_jSON
