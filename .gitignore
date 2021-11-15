@@ -1,2 +1,5 @@
 full_results.csv
 service_key.json
+
+# venv directory
+./python_code_models/linear_regression/venv/
