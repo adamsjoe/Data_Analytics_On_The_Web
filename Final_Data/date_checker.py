@@ -28,15 +28,28 @@ with open(FILENAME_IN, mode='r') as in_file, \
         else:
             print(f'  --> {DATE} is does not have the demonic {toCheckFor} character')
 
+        print(f'Looking at the collision date: {COLLISION_DATE}')
+        # check if '-' is present
+        if toCheckFor in COLLISION_DATE:
+            print(f'  --> {toCheckFor} was found in {COLLISION_DATE}')
+            # if present, then repace
+            DATE = DATE.replace(toCheckFor, toReplaceWith)
+            print(f'  --> collision date is now {COLLISION_DATE}')
+        else:
+            print(f'  --> {COLLISION_DATE} is does not have the demonic {toCheckFor} character')
+
+
         # now check format
         try:
             datetime.strptime(DATE, format)
         except ValueError:
-            print('  --> wrong format')
+            print('  --> wrong format date')
             temp = DATE.split(toReplaceWith)
             DATE = (f'{temp[2]}-{temp[1]}-{temp[0]}')
-            # print(f'{temp}')
-    
+            COLLISION_DATE = DATE
+            # print(f'd={temp}')
+
+            
         # out to the file
         out_file.write(f'{DATE},{BOROUGH},{WEEKDAY},{YEAR},{MONTH},{DAY},{COLLISION_DATE},{TEMP},{DEWP},{SLP},{VISIB},{WDSP},{MXPSD},{GUST},{MAX},{MIN},{PRCP},{SNDP},{FOG},{CYC_KILL},{CYC_INJD},{MOTO_KILL},{MOTO_INJD},{PEDS_KILL},{PEDS_INJD},{PERS_KILL},{PERS_INJD},{NUM_COLS}')
 
